@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import KarmaTestRunner from '../../src/KarmaTestRunner';
-import { CoverageCollection, RunnerOptions, RunResult, RunState, TestState } from 'stryker-api/test_runner';
+import { CoverageCollection, RunnerOptions, RunResult, RunStatus, TestStatus } from 'stryker-api/test_runner';
 import * as chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
 let expect = chai.expect;
@@ -11,10 +11,10 @@ describe('KarmaTestRunner', function () {
   this.timeout(10000);
 
   let expectToHaveSuccessfulTests = (result: RunResult, n: number) => {
-    expect(result.tests.filter(t => t.state === TestState.Success)).to.have.length(n);
+    expect(result.tests.filter(t => t.status === TestStatus.Success)).to.have.length(n);
   };
   let expectToHaveFailedTests = (result: RunResult, n: number) => {
-    expect(result.tests.filter(t => t.state === TestState.Failed)).to.have.length(n);
+    expect(result.tests.filter(t => t.status === TestStatus.Failed)).to.have.length(n);
   };
 
   describe('when all tests succeed', () => {
@@ -41,13 +41,13 @@ describe('KarmaTestRunner', function () {
         return expect(sut.run()).to.eventually.satisfy((runResult: RunResult) => {
           expectToHaveSuccessfulTests(runResult, 5);
           expectToHaveFailedTests(runResult, 0);
-          expect(runResult.state).to.be.eq(RunState.Complete);
+          expect(runResult.status).to.be.eq(RunStatus.Complete);
           return true;
         });
       });
 
       it('should be able to run twice in quick succession',
-        () => expect(sut.run().then(() => sut.run())).to.eventually.have.property('state', RunState.Complete));
+        () => expect(sut.run().then(() => sut.run())).to.eventually.have.property('state', RunStatus.Complete));
     });
   });
 
@@ -70,7 +70,7 @@ describe('KarmaTestRunner', function () {
       return expect(sut.run()).to.eventually.satisfy((runResult: RunResult) => {
         expectToHaveSuccessfulTests(runResult, 5);
         expectToHaveFailedTests(runResult, 2);
-        expect(runResult.state).to.be.eq(RunState.Complete);
+        expect(runResult.status).to.be.eq(RunStatus.Complete);
         return true;
       });
     });
@@ -92,7 +92,7 @@ describe('KarmaTestRunner', function () {
       return expect(sut.run()).to.eventually.satisfy((runResult: RunResult) => {
         expectToHaveSuccessfulTests(runResult, 0);
         expectToHaveFailedTests(runResult, 0);
-        expect(runResult.state).to.be.eq(RunState.Error);
+        expect(runResult.status).to.be.eq(RunStatus.Error);
         expect(runResult.errorMessages.length).to.equal(1);
         expect(runResult.errorMessages[0].indexOf('ReferenceError: Can\'t find variable: someGlobalVariableThatIsNotDeclared\nat')).to.eq(0);
         return true;
@@ -115,7 +115,7 @@ describe('KarmaTestRunner', function () {
       return expect(sut.run()).to.eventually.satisfy((runResult: RunResult) => {
         expectToHaveSuccessfulTests(runResult, 0);
         expectToHaveFailedTests(runResult, 0);
-        expect(runResult.state).to.be.eq(RunState.Complete);
+        expect(runResult.status).to.be.eq(RunStatus.Complete);
         expect(runResult.errorMessages.length).to.equal(0);
         return true;
       });
@@ -139,7 +139,7 @@ describe('KarmaTestRunner', function () {
 
     it('should report Complete without errors', () => {
       return expect(sut.run()).to.eventually.satisfy((runResult: RunResult) => {
-        expect(runResult.state).to.be.eq(RunState.Complete);
+        expect(runResult.status).to.be.eq(RunStatus.Complete);
         return true;
       });
     });
@@ -162,7 +162,7 @@ describe('KarmaTestRunner', function () {
 
     it('should report coverage data', () => expect(sut.run()).to.eventually.satisfy((runResult: RunResult) => {
       expect(runResult.coverage).to.be.ok;
-      expect(runResult.state).to.be.eq(RunState.Complete);
+      expect(runResult.status).to.be.eq(RunStatus.Complete);
       const files = Object.keys(runResult.coverage);
       expect(files).to.have.length(1);
       const coverageResult = (runResult.coverage as CoverageCollection)[files[0]];

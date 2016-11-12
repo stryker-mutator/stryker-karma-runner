@@ -1,4 +1,4 @@
-import { TestRunner, TestResult, TestState, RunState, RunResult, RunnerOptions, CoverageCollection, CoverageCollectionPerTest } from 'stryker-api/test_runner';
+import { TestRunner, TestResult, TestStatus, RunStatus, RunResult, RunnerOptions, CoverageCollection, CoverageCollectionPerTest } from 'stryker-api/test_runner';
 import * as karma from 'karma';
 import * as log4js from 'log4js';
 import * as _ from 'lodash';
@@ -81,15 +81,15 @@ export default class KarmaTestRunner extends EventEmitter implements TestRunner 
   private listenToSpecComplete() {
     this.server.on('spec_complete', (browser: any, spec: KarmaSpec) => {
       const name = `${spec.suite.join(' ')} ${spec.description}`;
-      let state = TestState.Failed;
+      let status = TestStatus.Failed;
       if (spec.skipped) {
-        state = TestState.Skipped;
+        status = TestStatus.Skipped;
       } else if (spec.success) {
-        state = TestState.Success;
+        status = TestStatus.Success;
       }
       this.currentTestResults.push({
         name,
-        state,
+        status,
         timeSpentMs: spec.time
       });
     });
@@ -171,19 +171,19 @@ export default class KarmaTestRunner extends EventEmitter implements TestRunner 
   private collectRunResult(): RunResult {
     return {
       tests: this.currentTestResults,
-      state: this.collectRunState(),
+      status: this.collectRunState(),
       coverage: this.currentCoverageReport,
       errorMessages: this.currentErrorMessages
     };
   }
 
-  private collectRunState(): RunState {
+  private collectRunState(): RunStatus {
     if (this.currentRunResult.disconnected) {
-      return RunState.Timeout;
+      return RunStatus.Timeout;
     } else if (this.currentRunResult.error && this.currentErrorMessages.length > 0) {
-      return RunState.Error;
+      return RunStatus.Error;
     } else {
-      return RunState.Complete;
+      return RunStatus.Complete;
     }
   }
 }
