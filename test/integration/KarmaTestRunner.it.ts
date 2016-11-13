@@ -13,8 +13,10 @@ describe('KarmaTestRunner', function () {
   let expectToHaveSuccessfulTests = (result: RunResult, n: number) => {
     expect(result.tests.filter(t => t.status === TestStatus.Success)).to.have.length(n);
   };
-  let expectToHaveFailedTests = (result: RunResult, n: number) => {
-    expect(result.tests.filter(t => t.status === TestStatus.Failed)).to.have.length(n);
+  let expectToHaveFailedTests = (result: RunResult, expectedFailureMessages: string[]) => {
+    const actualFailedTests = result.tests.filter(t => t.status === TestStatus.Failed);
+    expect(actualFailedTests).to.have.length(expectedFailureMessages.length);
+    actualFailedTests.forEach(failedTest => expect(failedTest.failureMessages[0]).to.contain(expectedFailureMessages.shift()));
   };
 
   describe('when all tests succeed', () => {
@@ -40,14 +42,14 @@ describe('KarmaTestRunner', function () {
       it('should report completed tests', () => {
         return expect(sut.run()).to.eventually.satisfy((runResult: RunResult) => {
           expectToHaveSuccessfulTests(runResult, 5);
-          expectToHaveFailedTests(runResult, 0);
+          expectToHaveFailedTests(runResult, []);
           expect(runResult.status).to.be.eq(RunStatus.Complete);
           return true;
         });
       });
 
       it('should be able to run twice in quick succession',
-        () => expect(sut.run().then(() => sut.run())).to.eventually.have.property('state', RunStatus.Complete));
+        () => expect(sut.run().then(() => sut.run())).to.eventually.have.property('status', RunStatus.Complete));
     });
   });
 
@@ -69,7 +71,7 @@ describe('KarmaTestRunner', function () {
     it('should report failed tests', () => {
       return expect(sut.run()).to.eventually.satisfy((runResult: RunResult) => {
         expectToHaveSuccessfulTests(runResult, 5);
-        expectToHaveFailedTests(runResult, 2);
+        expectToHaveFailedTests(runResult, ['Expected 7 to be 8.', 'Expected 3 to be 4.']);
         expect(runResult.status).to.be.eq(RunStatus.Complete);
         return true;
       });
@@ -91,7 +93,7 @@ describe('KarmaTestRunner', function () {
     it('should report Error with the error message', () => {
       return expect(sut.run()).to.eventually.satisfy((runResult: RunResult) => {
         expectToHaveSuccessfulTests(runResult, 0);
-        expectToHaveFailedTests(runResult, 0);
+        expectToHaveFailedTests(runResult, []);
         expect(runResult.status).to.be.eq(RunStatus.Error);
         expect(runResult.errorMessages.length).to.equal(1);
         expect(runResult.errorMessages[0].indexOf('ReferenceError: Can\'t find variable: someGlobalVariableThatIsNotDeclared\nat')).to.eq(0);
@@ -114,7 +116,7 @@ describe('KarmaTestRunner', function () {
     it('should report Complete without errors', () => {
       return expect(sut.run()).to.eventually.satisfy((runResult: RunResult) => {
         expectToHaveSuccessfulTests(runResult, 0);
-        expectToHaveFailedTests(runResult, 0);
+        expectToHaveFailedTests(runResult, []);
         expect(runResult.status).to.be.eq(RunStatus.Complete);
         expect(runResult.errorMessages.length).to.equal(0);
         return true;
@@ -145,7 +147,7 @@ describe('KarmaTestRunner', function () {
     });
   });
 
-  describe.only('when coverage data is available', () => {
+  describe('when coverage data is available', () => {
 
     before(() => {
       const testRunnerOptions: RunnerOptions = {

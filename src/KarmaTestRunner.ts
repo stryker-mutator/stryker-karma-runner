@@ -19,6 +19,7 @@ interface KarmaSpec {
   success: boolean;
   time: number;
   suite: string[];
+  log: string[];
 }
 
 const DEFAULT_OPTIONS: ConfigOptions = {
@@ -90,7 +91,8 @@ export default class KarmaTestRunner extends EventEmitter implements TestRunner 
       this.currentTestResults.push({
         name,
         status,
-        timeSpentMs: spec.time
+        timeSpentMs: spec.time,
+        failureMessages: spec.log
       });
     });
   }
