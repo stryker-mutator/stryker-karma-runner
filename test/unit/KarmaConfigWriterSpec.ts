@@ -45,9 +45,9 @@ describe('KarmaConfigWriter', () => {
         karmaConfigReader.read.returns(karmaConfig);
       });
 
-      it('should override the runner if it was not provided already', () => {
+      it('should not override the runner if it was not provided already, as it could result in strange behavior', () => {
         sut.write(config);
-        expect(config.testRunner).to.be.eq('karma');
+        expect(config.testRunner).to.be.undefined;
       });
 
       it('should not override the runner if it was provided already', () => {

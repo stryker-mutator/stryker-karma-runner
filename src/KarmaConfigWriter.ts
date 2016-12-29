@@ -12,13 +12,6 @@ export default class KarmaConfigWriter implements ConfigWriter {
     if (karmaConfig) {
       KarmaConfigWriter.importFiles(strykerConfig, karmaConfig);
       KarmaConfigWriter.importDefaultKarmaConfig(strykerConfig, karmaConfig);
-      KarmaConfigWriter.overrideRunner(strykerConfig);
-    }
-  }
-
-  private static overrideRunner(strykerConfig: StrykerConfig) {
-    if (!strykerConfig.testRunner) {
-      strykerConfig.testRunner = 'karma';
     }
   }
 
@@ -31,8 +24,7 @@ export default class KarmaConfigWriter implements ConfigWriter {
     if (files && Array.isArray(files)) {
       const karmaFiles = files.map(KarmaConfigWriter.toInputFileDescriptor);
       log.debug(`Importing following files from karma.conf file to stryker: ${JSON.stringify(karmaFiles)}`);
-      strykerConfig.files = strykerConfig.files
-        .concat(karmaFiles);
+      strykerConfig.files = strykerConfig.files.concat(karmaFiles);
     }
     if (exclude && Array.isArray(exclude)) {
       const ignores = exclude.map(fileToIgnore => `!${fileToIgnore}`);
