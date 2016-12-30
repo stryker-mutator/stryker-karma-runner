@@ -23,11 +23,12 @@ npm i --save-dev stryker-karma-runner
 
 The `stryker-karma-runner` is a pluggin for `stryker` to enable `karma` as a test runner. As such you should install the correct versions of the dependencies:
 
-* `karma`: version ^0.13.0 || ^1.0.0
-* `karma-coverage`: version ^0.5.5 || ^1.0.0
-* `stryker-api`: version ^0.0.2
+* `karma`
+* `stryker-api`
 
-These are marked as `peerDependencies` of `stryker-karma-runner` so you should get a warning when the correct versions are not installed.
+For the current versions, see the `peerDependencies` section in the [package.json](https://github.com/stryker-mutator/stryker-karma-runner/blob/master/package.json).
+
+These are marked as `peerDependencies` of `stryker-karma-runner` so you get a warning during installation when the correct versions are not installed.
 *Note*: Karma itself also requires some plugins to work.  
 
 ## Configuring
@@ -46,6 +47,35 @@ If you do decide to choose specific modules, don't forget to add `'stryker-karma
 Specify the use of the karma testRunner: `testRunner: 'karma'`.
 
 ### Karma config
+
+#### Automatic setup
+
+You can configure stryker to use *your* `karma.conf.js` file. 
+
+```javascript
+// Stryker.conf.js
+module.exports = function (config) {
+    config.set({
+        testRunner: 'karma',
+        testFramework: 'jasmine', // <-- add your testFramework here
+        karmaConfigFile: 'karma.conf.js' // <-- add your karma.conf.js file here
+        mutate: [
+            'src/**/*.js' // <-- mark files for mutation here
+        ]
+    });
+}
+```
+
+This will configure 3 things for you:
+
+* Karma's `files` option will be used to configure the files in Stryker, you don't need to keep a list of files in sync in both `stryker.conf.js` and `karma.conf.js`.
+* Karma's `exclude` option will be used to ignore files in Stryker (using `!` to ignore them)
+* Other karma config will be copied to the `karmaConfig` option in stryker config. These will be used by the `stryker-karma-runner` during mutation testing.
+    * **Note**: Any manual setup you configure in the `karmaConfig` options will *not* be overwritten.
+
+#### Manual setup
+
+**Note**: Using the manual setup will not read your `karma.conf.js` options. You'll probably need to *Override karma config* (see next section)
 
 When the Stryker uses the karma test runner, it uses these default karma config settings:
 
