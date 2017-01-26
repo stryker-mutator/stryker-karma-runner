@@ -153,7 +153,7 @@ export default class KarmaTestRunner extends EventEmitter implements TestRunner 
     // Override port
     karmaConfig.port = this.options.port;
 
-    // Override browserNoActivityTimeout. Default value 10000 might not enought to send perTest coverage results
+    // Override browserNoActivityTimeout. Default value 10000 might not enough to send perTest coverage results
     karmaConfig.browserNoActivityTimeout = 1000000;
 
     // Override frameworks
