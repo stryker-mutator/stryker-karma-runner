@@ -13,7 +13,19 @@ describe('KarmaTestRunner', function () {
   let expectToHaveFailedTests = (result: RunResult, expectedFailureMessages: string[]) => {
     const actualFailedTests = result.tests.filter(t => t.status === TestStatus.Failed);
     expect(actualFailedTests).to.have.length(expectedFailureMessages.length);
-    actualFailedTests.forEach(failedTest => expect(failedTest.failureMessages[0]).to.contain(expectedFailureMessages.shift()));
+    actualFailedTests.forEach(failedTest => {
+      if (failedTest.failureMessages) {
+        const expectedFailureMessage = expectedFailureMessages.shift();
+        if (typeof expectedFailureMessage === 'string') {
+          expect(failedTest.failureMessages[0]).to.contain(expectedFailureMessage);
+        } else {
+          expect.fail(typeof expectedFailureMessage, typeof '');
+        }
+      } else {
+        expect.fail(failedTest.failureMessages, []);
+      }
+    });
+
   };
 
   describe('when all tests succeed', () => {
@@ -92,8 +104,12 @@ describe('KarmaTestRunner', function () {
         expectToHaveSuccessfulTests(runResult, 0);
         expectToHaveFailedTests(runResult, []);
         expect(runResult.status).to.be.eq(RunStatus.Error);
-        expect(runResult.errorMessages.length).to.equal(1);
-        expect(runResult.errorMessages[0].indexOf('ReferenceError: Can\'t find variable: someGlobalVariableThatIsNotDeclared\nat')).to.eq(0);
+        if (runResult.errorMessages) {
+          expect(runResult.errorMessages.length).to.equal(1);
+          expect(runResult.errorMessages[0].indexOf('ReferenceError: Can\'t find variable: someGlobalVariableThatIsNotDeclared\nat')).to.eq(0);
+        } else {
+          expect.fail(runResult.errorMessages, []);
+        }
         return true;
       });
     });
@@ -115,7 +131,11 @@ describe('KarmaTestRunner', function () {
         expectToHaveSuccessfulTests(runResult, 0);
         expectToHaveFailedTests(runResult, []);
         expect(runResult.status).to.be.eq(RunStatus.Complete);
-        expect(runResult.errorMessages.length).to.equal(0);
+        if (runResult.errorMessages) {
+          expect(runResult.errorMessages.length).to.equal(0);
+        } else {
+          expect.fail(runResult.errorMessages, []);
+        }
         return true;
       });
     });
